@@ -24,10 +24,13 @@ const scripts = useDefaultScripts
         : ifScript('test', 'npm run test --silent -- --coverage'),
       flow: ifScript('flow', 'npm run flow --silent'),
     }
-  : validateScripts.split(',').reduce((scriptsToRun, name) => {
-      scriptsToRun[name] = `npm run ${name} --silent`;
-      return scriptsToRun;
-    }, {});
+  : validateScripts.split(',').reduce(
+      (scriptsToRun, name) =>
+        Object.assign({}, scriptsToRun, {
+          [name]: `npm run ${name} --silent`,
+        }),
+      {},
+    );
 
 const result = spawn.sync(
   resolveBin('concurrently'),

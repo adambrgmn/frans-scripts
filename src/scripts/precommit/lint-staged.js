@@ -27,9 +27,9 @@ function fakeCosmiconfig(...args) {
         });
       },
     };
-  } else {
-    return realCosmicConfig(...args);
   }
+
+  return realCosmicConfig(...args);
 }
 
 if (useBuiltinConfig) {
