@@ -10,13 +10,6 @@ const { pkg, path: pkgPath } = readPkgUp.sync({
 });
 const appDirectory = path.dirname(pkgPath);
 
-function resolveKcdScripts() {
-  if (pkg.name === 'frans-scripts') {
-    return require.resolve('./').replace(process.cwd(), '.');
-  }
-  return resolveBin('frans-scripts');
-}
-
 // eslint-disable-next-line complexity
 function resolveBin(
   modName,
@@ -28,6 +21,7 @@ function resolveBin(
   } catch (_error) {
     // ignore _error
   }
+
   try {
     const modPkgPath = require.resolve(`${modName}/package.json`);
     const modPkgDir = path.dirname(modPkgPath);
@@ -44,6 +38,13 @@ function resolveBin(
     }
     throw error;
   }
+}
+
+function resolveFransScripts() {
+  if (pkg.name === 'frans-scripts') {
+    return require.resolve('./').replace(process.cwd(), '.');
+  }
+  return resolveBin('frans-scripts');
 }
 
 const fromRoot = (...p) => path.join(appDirectory, ...p);
@@ -71,19 +72,19 @@ const ifDevDep = ifPkgSubProp('devDependencies');
 const ifAnyDep = (deps, t, f) => (hasAnyDep(arrify(deps)) ? t : f);
 const ifScript = ifPkgSubProp('scripts');
 
+function envIsSet(name) {
+  return (
+    process.env.hasOwnProperty(name) && // eslint-disable-line
+    process.env[name] &&
+    process.env[name] !== 'undefined'
+  );
+}
+
 function parseEnv(name, def) {
   if (envIsSet(name)) {
     return JSON.parse(process.env[name]);
   }
   return def;
-}
-
-function envIsSet(name) {
-  return (
-    process.env.hasOwnProperty(name) &&
-    process.env[name] &&
-    process.env[name] !== 'undefined'
-  );
 }
 
 function getConcurrentlyArgs(scripts, { killOthers = true } = {}) {
@@ -97,12 +98,15 @@ function getConcurrentlyArgs(scripts, { killOthers = true } = {}) {
     'bgBlack',
     'bgYellow',
   ];
+
+  // eslint-disable-next-line
   scripts = Object.entries(scripts).reduce((all, [name, script]) => {
     if (script) {
-      all[name] = script;
+      return Object.assign({}, all, { [name]: script });
     }
     return all;
   }, {});
+
   const prefixColors = Object.keys(scripts)
     .reduce(
       (pColors, _s, i) =>
@@ -125,6 +129,7 @@ function isOptedOut(key, t = true, f = false) {
   if (!fs.existsSync(fromRoot('.opt-out'))) {
     return f;
   }
+
   const contents = fs.readFileSync(fromRoot('.opt-out'), 'utf-8');
   return contents.includes(key) ? t : f;
 }
@@ -133,6 +138,7 @@ function isOptedIn(key, t = true, f = false) {
   if (!fs.existsSync(fromRoot('.opt-in'))) {
     return f;
   }
+
   const contents = fs.readFileSync(fromRoot('.opt-in'), 'utf-8');
   return contents.includes(key) ? t : f;
 }
@@ -156,5 +162,5 @@ module.exports = {
   parseEnv,
   pkg,
   resolveBin,
-  resolveKcdScripts,
+  resolveFransScripts,
 };
