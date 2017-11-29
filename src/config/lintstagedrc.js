@@ -1,6 +1,6 @@
-const { resolveKcdScripts, resolveBin, isOptedOut } = require('../utils');
+const { resolveFransScripts, resolveBin, isOptedOut } = require('../utils');
 
-const kcdScripts = resolveKcdScripts();
+const fransScripts = resolveFransScripts();
 const doctoc = resolveBin('doctoc');
 
 module.exports = {
@@ -8,13 +8,13 @@ module.exports = {
   linters: {
     'README.md': [`${doctoc} --maxlevel 3 --notitle`, 'git add'],
     '.all-contributorsrc': [
-      `${kcdScripts} contributors generate`,
+      `${fransScripts} contributors generate`,
       'git add README.md',
     ],
-    '**/*.+(js|json|less|css|ts|md)': [
-      isOptedOut('autoformat', null, `${kcdScripts} format`),
-      `${kcdScripts} lint`,
-      `${kcdScripts} test --findRelatedTests`,
+    '**/*.+(js|jsx|json|less|scss|sass|css|ts|md)': [
+      isOptedOut('autoformat', null, `${fransScripts} format`),
+      `${fransScripts} lint`,
+      `${fransScripts} test --findRelatedTests`,
       isOptedOut('autoformat', null, 'git add'),
     ].filter(Boolean),
   },

@@ -19,10 +19,10 @@ const isNode = parseEnv('BUILD_NODE', false);
 const name = process.env.BUILD_NAME || capitalize(camelcase(pkg.name));
 
 const defaultGlobals = Object.keys(pkg.peerDependencies || {}).reduce(
-  (deps, dep) => {
-    deps[dep] = capitalize(camelcase(dep));
-    return deps;
-  },
+  (deps, dep) =>
+    Object.assign({}, deps, {
+      [dep]: capitalize(camelcase(dep)),
+    }),
   {},
 );
 

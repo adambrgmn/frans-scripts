@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import * as utilsMock from '../../utils';
 
 jest.mock('../../utils', () => ({
