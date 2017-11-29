@@ -1,0 +1,20 @@
+{
+  "projectName": "frans-scripts",
+  "projectOwner": "adambrgmn",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "adambrgmn",
+      "name": "Adam Bergman",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/13746650?v=4",
+      "profile": "http://fransvilhelm.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ]
+}
