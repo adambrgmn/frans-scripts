@@ -122,3 +122,9 @@ Contributions of any kind welcome!
 ## LICENSE
 
 MIT
+
+[npm]: https://www.npmjs.com/
+[node]: https://nodejs.org
+[prs]: http://makeapullrequest.com
+[emojis]: https://github.com/kentcdodds/all-contributors#emoji-key
+[all-contributors]: https://github.com/kentcdodds/all-contributors
