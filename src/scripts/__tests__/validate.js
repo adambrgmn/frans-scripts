@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import cases from 'jest-in-case';
 import { unquoteSerializer } from './helpers/serializers';
 
