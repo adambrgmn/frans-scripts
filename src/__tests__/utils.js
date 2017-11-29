@@ -1,9 +1,12 @@
+/* eslint-disable no-use-before-define */
 jest.mock('read-pkg-up', () => ({
   sync: jest.fn(() => ({ pkg: {}, path: '/blah/package.json' })),
 }));
+
 jest.mock('which', () => ({ sync: jest.fn(() => {}) }));
 
-let whichSyncMock, readPkgUpSyncMock;
+let whichSyncMock;
+let readPkgUpSyncMock;
 
 beforeEach(() => {
   jest.resetModules();
@@ -23,17 +26,17 @@ test('appDirectory is the dirname to the package.json', () => {
   expect(require('../utils').appDirectory).toBe(pkgPath);
 });
 
-test('resolveKcdScripts resolves to src/index.js when in the frans-scripts package', () => {
+test('resolveFransScripts resolves to src/index.js when in the frans-scripts package', () => {
   mockPkg({ pkg: { name: 'frans-scripts' } });
-  expect(require('../utils').resolveKcdScripts()).toBe(
+  expect(require('../utils').resolveFransScripts()).toBe(
     require.resolve('../').replace(process.cwd(), '.'),
   );
 });
 
-test('resolveKcdScripts resolves to frans-scripts if not in the frans-scripts package', () => {
+test('resolveFransScripts resolves to frans-scripts if not in the frans-scripts package', () => {
   mockPkg({ pkg: { name: 'not-frans-scripts' } });
   whichSyncMock.mockImplementationOnce(() => require.resolve('../'));
-  expect(require('../utils').resolveKcdScripts()).toBe('frans-scripts');
+  expect(require('../utils').resolveFransScripts()).toBe('frans-scripts');
 });
 
 test(`resolveBin resolves to the full path when it's not in $PATH`, () => {

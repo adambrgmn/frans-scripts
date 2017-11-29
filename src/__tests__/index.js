@@ -19,8 +19,10 @@ cases(
     const originalExit = process.exit;
     const originalArgv = process.argv;
     const originalLog = console.log;
+
     process.exit = jest.fn();
     console.log = jest.fn();
+
     try {
       // tests
       process.argv = ['node', '../', ...args];
