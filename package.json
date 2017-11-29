@@ -59,9 +59,13 @@
     "cross-env": "^5.1.1",
     "cross-spawn": "^5.1.0",
     "doctoc": "^1.3.0",
-    "eslint": "^4.11.0",
-    "eslint-config-kentcdodds": "^13.0.1",
-    "eslint-config-prettier": "^2.8.0",
+    "eslint": "^4.12.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.5.1",
     "glob": "^7.1.2",
     "husky": "^0.14.3",
     "is-ci": "^1.0.10",
@@ -91,8 +95,13 @@
     "slash": "^1.0.0"
   },
   "eslintConfig": {
-    "extends": ["kentcdodds", "kentcdodds/jest"],
+    "extends": ["airbnb-base", "prettier"],
+    "env": {
+      "node": true,
+      "jest": true
+    },
     "rules": {
+      "global-require": "off",
       "no-process-exit": "off",
       "import/no-dynamic-require": "off",
       "import/no-unassigned-import": "off",
