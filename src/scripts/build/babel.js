@@ -15,7 +15,7 @@ const config = useBuiltinConfig
 
 const ignore = args.includes('--ignore')
   ? []
-  : ['--ignore', '__tests__,__mocks__'];
+  : ['--ignore', '__tests__,__mocks__,*.test.js,*.spec.js'];
 
 const copyFiles = args.includes('--no-copy-files') ? [] : ['--copy-files'];
 
