@@ -17,8 +17,21 @@ const reportCoverage = hasFile('coverage') && !parseEnv('SKIP_CODECOV', false);
 
 if (!autorelease && !reportCoverage) {
   console.log(
-    'No need to autorelease or report coverage. Skipping travis-after-success script...',
+    'No need to autorelease or report coverage. Running semantic-release dry-run',
   );
+
+  const result = spawn.sync(
+    resolveBin('concurrently'),
+    getConcurrentlyArgs(
+      {
+        release: `echo installing semantic-release && npx -p semantic-release@11 -c 'echo running semantic-release && semantic-release --dry-run'`,
+      },
+      { killOthers: false },
+    ),
+    { stdio: 'inherit' },
+  );
+
+  process.exit(result.status);
 } else {
   const result = spawn.sync(
     resolveBin('concurrently'),
@@ -28,7 +41,7 @@ if (!autorelease && !reportCoverage) {
           ? `echo installing codecov && npx -p codecov -c 'echo running codecov && codecov'`
           : null,
         release: autorelease
-          ? `echo installing semantic-release && npx -p semantic-release@8 -c 'echo running semantic-release && semantic-release pre && npm publish && semantic-release post'`
+          ? `echo installing semantic-release && npx -p semantic-release@11 -c 'echo running semantic-release && semantic-release'`
           : null,
       },
       { killOthers: false },
