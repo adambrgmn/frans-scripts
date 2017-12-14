@@ -16,22 +16,7 @@ const autorelease =
 const reportCoverage = hasFile('coverage') && !parseEnv('SKIP_CODECOV', false);
 
 if (!autorelease && !reportCoverage) {
-  console.log(
-    'No need to autorelease or report coverage. Running semantic-release dry-run',
-  );
-
-  const result = spawn.sync(
-    resolveBin('concurrently'),
-    getConcurrentlyArgs(
-      {
-        release: `echo installing semantic-release && npx -p semantic-release@11 -c 'echo running semantic-release && semantic-release --dry-run'`,
-      },
-      { killOthers: false },
-    ),
-    { stdio: 'inherit' },
-  );
-
-  process.exit(result.status);
+  console.log('No need to autorelease or report coverage.');
 } else {
   const result = spawn.sync(
     resolveBin('concurrently'),
@@ -42,7 +27,7 @@ if (!autorelease && !reportCoverage) {
           : null,
         release: autorelease
           ? `echo installing semantic-release && npx -p semantic-release@11 -c 'echo running semantic-release && semantic-release'`
-          : null,
+          : `echo running semantic-release dry-run && echo installing semantic-release && npx -p semantic-release@11 -c 'echo running semantic-release && semantic-release --dry-run'`,
       },
       { killOthers: false },
     ),
