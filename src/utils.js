@@ -143,6 +143,17 @@ function isOptedIn(key, t = true, f = false) {
   return contents.includes(key) ? t : f;
 }
 
+const getPackageManagerBin = () => {
+  try {
+    resolveBin('yarn');
+  } catch (err) {
+    return 'npm';
+  }
+
+  if (hasFile('yarn.lock')) return 'yarn';
+  return 'npm';
+};
+
 module.exports = {
   appDirectory,
   envIsSet,
@@ -163,4 +174,5 @@ module.exports = {
   pkg,
   resolveBin,
   resolveFransScripts,
+  getPackageManagerBin,
 };
