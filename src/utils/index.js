@@ -1,9 +1,13 @@
+const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
 const arrify = require('arrify');
 const has = require('lodash.has');
 const readPkgUp = require('read-pkg-up');
 const which = require('which');
+const spawn = require('cross-spawn');
+const R = require('ramda');
+const { toSnakeCase, toUpperCase } = require('strman');
 
 const { pkg, path: pkgPath } = readPkgUp.sync({
   cwd: fs.realpathSync(process.cwd()),
@@ -42,8 +46,9 @@ function resolveBin(
 
 function resolveFransScripts() {
   if (pkg.name === 'frans-scripts') {
-    return require.resolve('./').replace(process.cwd(), '.');
+    return require.resolve('../bin.js').replace(process.cwd(), '.');
   }
+
   return resolveBin('frans-scripts');
 }
 
@@ -136,6 +141,57 @@ const getPackageManagerBin = () => {
   return 'npm';
 };
 
+/* Added after refactor */
+
+const assureAsync = action => (...args) =>
+  Promise.resolve().then(() => action(...args));
+
+const wrapAsyncCliAction = action => async (...args) => {
+  try {
+    const asyncAction = assureAsync(action);
+    await asyncAction(...args);
+  } catch (err) {
+    winston.error(err);
+    process.exitCode = err.code || 1;
+  }
+};
+
+const asyncSpawn = (bin, args, opts = { stdio: 'inherit' }) => {
+  const cp = spawn(bin, args, opts);
+  const promise = new Promise((resolve, reject) => {
+    cp.on('close', code => {
+      if (code > 0) return reject(code);
+      return resolve();
+    });
+  });
+
+  Object.defineProperty(promise, 'cp', { value: cp });
+
+  return promise;
+};
+
+const reformatFlags = (flags, ignore = []) => {
+  const skip = ['_', ...ignore];
+  return R.pipe(
+    R.omit(skip),
+    R.toPairs,
+    R.map(([flag, val]) => {
+      const dash = flag.length > 1 ? '--' : '-';
+      const no = !val ? 'no-' : '';
+      const isBool = R.is(Boolean, val);
+      return [dash + no + flag, isBool ? null : val].filter(Boolean);
+    }),
+    R.flatten,
+  )(flags);
+};
+
+const toConstant = R.pipe(toSnakeCase, toUpperCase);
+
+const setScriptEnv = cmd => {
+  const envName = toConstant(`scripts ${cmd}`);
+  process.env[envName] = true;
+};
+
 module.exports = {
   appDirectory,
   envIsSet,
@@ -155,4 +211,9 @@ module.exports = {
   resolveBin,
   resolveFransScripts,
   getPackageManagerBin,
+  wrapAsyncCliAction,
+  asyncSpawn,
+  reformatFlags,
+  toConstant,
+  setScriptEnv,
 };

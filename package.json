@@ -7,17 +7,18 @@
     "npm": ">= 5"
   },
   "bin": {
-    "frans-scripts": "dist/index.js"
+    "frans-scripts": "dist/bin.js"
   },
   "scripts": {
-    "add-contributor": "node src contributors add",
-    "test": "node src test",
-    "test:update": "node src test --updateSnapshot",
-    "build": "node src build",
-    "lint": "node src lint",
-    "format": "node src format",
-    "validate": "node src validate",
-    "precommit": "node src precommit"
+    "add-contributor": "./src/bin.js contributors add",
+    "test": "./src/bin.js test",
+    "test:update": "./src/bin.js test --updateSnapshot",
+    "build": "./src/bin.js build",
+    "lint": "./src/bin.js lint",
+    "format": "./src/bin.js format",
+    "validate": "./src/bin.js validate",
+    "precommit": "./src/bin.js precommit",
+    "release": "./src/bin.js release"
   },
   "files": [
     "dist",
@@ -43,12 +44,14 @@
     "all-contributors-cli": "^4.10.1",
     "arrify": "^1.0.1",
     "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.3",
     "babel-jest": "^22.0.1",
     "babel-macros": "^1.2.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-minify-dead-code-elimination": "^0.2.0",
     "babel-plugin-module-resolver": "^3.0.0",
+    "babel-plugin-styled-components": "^1.4.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-inline-environment-variables": "^0.2.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
@@ -73,10 +76,12 @@
     "is-ci": "^1.0.10",
     "jest": "^22.0.1",
     "lint-staged": "^6.0.0",
+    "listr": "^0.13.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.has": "^4.5.2",
     "mkdirp": "^0.5.1",
     "prettier": "^1.9.2",
+    "ramda": "^0.25.0",
     "read-pkg-up": "^3.0.0",
     "resolve": "^1.5.0",
     "rimraf": "^2.6.2",
@@ -88,7 +93,11 @@
     "rollup-plugin-node-globals": "^1.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^2.0.1",
+    "sade": "^1.1.1",
+    "semantic-release": "11.0.2",
+    "strman": "^2.0.0",
     "which": "^1.3.0",
+    "winston": "^2.4.0",
     "yargs-parser": "^8.0.0"
   },
   "devDependencies": {

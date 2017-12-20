@@ -1,14 +1,13 @@
-const spawn = require('cross-spawn');
-const { resolveBin } = require('../utils');
+const { asyncSpawn, resolveBin } = require('../utils');
 
-const args = process.argv.slice(2);
+async function contributors(_, { _: args }) {
+  const result = await asyncSpawn(
+    resolveBin('all-contributors-cli', { executable: 'all-contributors' }),
+    args,
+  );
 
-const result = spawn.sync(
-  resolveBin('all-contributors-cli', { executable: 'all-contributors' }),
-  args,
-  {
-    stdio: 'inherit',
-  },
-);
+  if (result > 0)
+    throw new Error(`frans-scripts contributors exited with code ${result}`);
+}
 
-process.exit(result.status);
+module.exports = contributors;

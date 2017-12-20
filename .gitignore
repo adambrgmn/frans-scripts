@@ -5,6 +5,3 @@ dist
 .opt-out
 .DS_Store
 .eslintcache
-
-package-lock.json
-yarn.lock
