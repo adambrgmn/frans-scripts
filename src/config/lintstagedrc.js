@@ -13,9 +13,11 @@ module.exports = {
     ],
     '**/*.+(js|jsx|json|less|scss|sass|css|ts|md)': [
       isOptedOut('autoformat', null, `${fransScripts} format`),
-      `${fransScripts} lint`,
-      `${fransScripts} test --findRelatedTests`,
       isOptedOut('autoformat', null, 'git add'),
     ].filter(Boolean),
+    '**/*.+(js|jsx)': [
+      `${fransScripts} test --findRelatedTests`,
+      `${fransScripts} lint`,
+    ],
   },
 };
