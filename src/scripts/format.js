@@ -1,44 +1,72 @@
-const path = require('path');
-const spawn = require('cross-spawn');
-const yargsParser = require('yargs-parser');
-const { hasPkgProp, resolveBin, hasFile } = require('../utils');
+const winston = require('winston');
+const { has, propIs, prop, isNil, is } = require('ramda');
+const {
+  hasFile,
+  hasPkgProp,
+  resolveBin,
+  asyncSpawn,
+  reformatFlags,
+  fromRoot,
+} = require('../utils');
 
-const args = process.argv.slice(2);
-const parsedArgs = yargsParser(args);
+async function format(configPath, args) {
+  if (isNil(configPath) || !is(String, configPath)) {
+    throw new Error(
+      `You must specify a default config path (as string) to command format`,
+    );
+  }
 
-const here = p => path.join(__dirname, p);
-const hereRelative = p => here(p).replace(process.cwd(), '.');
+  const hasArg = p => has(p, args);
+  const getArg = p => prop(p, args);
+  const argIsString = p => propIs(String, p, args);
 
-const useBuiltinConfig =
-  !args.includes('--config') &&
-  !hasFile('.prettierrc') &&
-  !hasFile('prettier.config.js') &&
-  !hasPkgProp('prettierrc');
-const config = useBuiltinConfig
-  ? ['--config', hereRelative('../config/prettierrc.js')]
-  : [];
+  const useBuiltinConfig =
+    !hasArg('config') &&
+    !hasFile('.prettierrc') &&
+    !hasFile('prettier.config.js') &&
+    !hasPkgProp('prettier');
 
-const useBuiltinIgnore =
-  !args.includes('--ignore-path') && !hasFile('.prettierignore');
-const ignore = useBuiltinIgnore
-  ? ['--ignore-path', hereRelative('../config/prettierignore')]
-  : [];
+  const useGitignore =
+    hasFile('.gitignore') &&
+    !hasFile('.prettierignore') &&
+    !hasArg('ignore-path');
+  const useBuiltinWrite = !hasArg('write') || getArg('write');
 
-const write = args.includes('--no-write') ? [] : ['--write'];
+  const config = useBuiltinConfig
+    ? ['--config', configPath]
+    : hasArg('config') && argIsString('config')
+      ? ['--config', getArg('config')]
+      : [];
 
-// this ensures that when running format as a pre-commit hook and we get
-// the full file path, we make that non-absolute so it is treated as a glob,
-// This way the prettierignore will be applied
-const relativeArgs = args.map(a => a.replace(`${process.cwd()}/`, ''));
+  const ignore = useGitignore
+    ? ['--ignore-path', fromRoot('.gitignore')]
+    : hasArg('ignore-path') && argIsString('config')
+      ? ['--ignore-path', getArg('ignore-path')]
+      : [];
 
-const filesToApply = parsedArgs._.length
-  ? []
-  : ['**/*.+(js|jsx|json|less|scss|css|ts|md)'];
+  const write = useBuiltinWrite ? ['--write'] : [];
 
-const result = spawn.sync(
-  resolveBin('prettier'),
-  [...config, ...ignore, ...write, ...filesToApply].concat(relativeArgs),
-  { stdio: 'inherit' },
-);
+  const flags = reformatFlags(args, [
+    'config',
+    'ignore-path',
+    'write',
+    'debug',
+  ]);
 
-process.exit(result.status);
+  const filesProvided = getArg('_');
+  const files =
+    filesProvided.length > 0
+      ? filesProvided
+      : ['**/*.+(js|jsx|json|less|scss|css|ts|md)'];
+
+  const bin = resolveBin('prettier');
+  const commandArgs = [...flags, ...config, ...ignore, ...write, ...files];
+
+  winston.debug(`Will call ${bin} with args: ${commandArgs.join(' ')}`);
+  const result = await asyncSpawn(bin, commandArgs);
+
+  if (result > 0)
+    throw new Error(`frans-scripts format exited with code ${result}`);
+}
+
+module.exports = format;

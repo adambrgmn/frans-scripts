@@ -1,4 +1,4 @@
-const { ifAnyDep } = require('../utils');
+const { ifAnyDep } = require('../../utils');
 
 module.exports = {
   parser: 'babel-eslint',

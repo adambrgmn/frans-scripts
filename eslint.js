@@ -1,2 +1,2 @@
 /* eslint-disable import/no-unresolved */
-module.exports = require('./dist/config/eslintrc');
+module.exports = require('./dist/config/lint/eslint.config');

@@ -1,50 +1,75 @@
-const path = require('path');
-const spawn = require('cross-spawn');
-const yargsParser = require('yargs-parser');
-const { hasPkgProp, resolveBin, hasFile } = require('../utils');
+const winston = require('winston');
+const { isNil, is, has, prop, propIs } = require('ramda');
+const {
+  asyncSpawn,
+  resolveBin,
+  hasFile,
+  hasPkgProp,
+  reformatFlags,
+  fromRoot,
+} = require('../utils');
 
-let args = process.argv.slice(2);
-const here = p => path.join(__dirname, p);
-const hereRelative = p => here(p).replace(process.cwd(), '.');
-const parsedArgs = yargsParser(args);
+async function lint(configPath, args) {
+  if (isNil(configPath) || !is(String, configPath)) {
+    throw new Error(
+      `You must specify a default config path (as string) to command lint`,
+    );
+  }
 
-const useBuiltinConfig =
-  !args.includes('--config') &&
-  !hasFile('.eslintrc') &&
-  !hasFile('.eslintrc.js') &&
-  !hasFile('.eslintrc.json') &&
-  !hasPkgProp('eslintConfig');
+  const hasArg = p => has(p, args);
+  const getArg = p => prop(p, args);
+  const argIsString = p => propIs(String, p, args);
 
-const config = useBuiltinConfig
-  ? ['--config', hereRelative('../config/eslintrc.js')]
-  : [];
+  const useBuiltinConfig =
+    !hasArg('config') &&
+    !hasFile('.eslintrc') &&
+    !hasFile('.eslintrc.json') &&
+    !hasFile('.eslintrc.js') &&
+    !hasPkgProp('eslintConfig');
 
-const useBuiltinIgnore =
-  !args.includes('--ignore-path') &&
-  !hasFile('.eslintignore') &&
-  !hasPkgProp('eslintIgnore');
+  const useGitignore =
+    hasFile('.gitignore') &&
+    !hasArg('ignore-path') &&
+    !hasFile('.eslintignore') &&
+    !hasPkgProp('eslintIgnore');
 
-const ignore = useBuiltinIgnore
-  ? ['--ignore-path', hereRelative('../config/eslintignore')]
-  : [];
+  const useBuiltinCache = !hasArg('cache') || getArg('cache');
 
-const cache = args.includes('--no-cache') ? [] : ['--cache'];
+  const config = useBuiltinConfig
+    ? ['--config', configPath]
+    : hasArg('config') && argIsString('config')
+      ? ['--config', getArg('config')]
+      : [];
 
-const filesGiven = parsedArgs._.length > 0;
+  const ignore = useGitignore
+    ? ['--ignore-path', fromRoot('.gitignore')]
+    : hasArg('ignore-path') && argIsString('ignore-path')
+      ? ['--ignore-path', getArg('ignore-path')]
+      : [];
 
-const filesToApply = filesGiven ? [] : ['.'];
+  const cache = useBuiltinCache ? ['--cache'] : [];
 
-if (filesGiven) {
-  // we need to take all the flag-less arguments (the files that should be linted)
-  // and filter out the ones that aren't js files. Otherwise json or css files
-  // may be passed through
-  args = args.filter(a => !parsedArgs._.includes(a) || a.endsWith('.js'));
+  const flags = reformatFlags(args, [
+    'config',
+    'ignore-path',
+    'cache',
+    'debug',
+  ]);
+
+  const filesGiven = getArg('_');
+  const files =
+    filesGiven.length > 0
+      ? filesGiven.filter(f => f.endsWith('.js') || f.endsWith('.jsx'))
+      : ['.'];
+
+  const bin = resolveBin('eslint');
+  const commandArgs = [...files, ...config, ...ignore, ...cache, ...flags];
+
+  winston.debug(`Will call ${bin} with args: ${commandArgs.join(' ')}`);
+  const result = await asyncSpawn(bin, commandArgs);
+
+  if (result > 0)
+    throw new Error(`frans-scripts lint exited with code ${result}`);
 }
 
-const result = spawn.sync(
-  resolveBin('eslint'),
-  [...config, ...ignore, ...cache, ...args, ...filesToApply],
-  { stdio: 'inherit' },
-);
-
-process.exit(result.status);
+module.exports = lint;

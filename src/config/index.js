@@ -1,8 +1,8 @@
 module.exports = {
-  babel: require('./babelrc'),
-  eslint: require('./eslintrc'),
-  jest: require('./jest.config'),
-  lintStaged: require('./lintstagedrc'),
-  prettier: require('./prettierrc'),
-  getRollupConfig: () => require('./rollup.config'),
+  babel: require('./build/babel.config'),
+  eslint: require('./lint/eslint.config'),
+  jest: require('./test/jest.config'),
+  lintStaged: require('./precommit/lintstaged.config'),
+  prettier: require('./format/prettier.config'),
+  getRollupConfig: () => require('./bundle/rollup.config'),
 };

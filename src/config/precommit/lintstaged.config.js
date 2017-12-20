@@ -1,4 +1,4 @@
-const { resolveFransScripts, resolveBin } = require('../utils');
+const { resolveFransScripts, resolveBin } = require('../../utils');
 
 const fransScripts = resolveFransScripts();
 const doctoc = resolveBin('doctoc');

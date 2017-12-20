@@ -1,41 +1,46 @@
-const path = require('path');
-const spawn = require('cross-spawn');
+const { has, propIs, prop, isNil, is } = require('ramda');
 const {
-  resolveBin,
   hasFile,
   hasPkgProp,
-  getPackageManagerBin,
+  resolveBin,
+  asyncSpawn,
+  reformatFlags,
 } = require('../utils');
 
-const here = p => path.join(__dirname, p);
-const hereRelative = p => here(p).replace(process.cwd(), '.');
+async function precommit(configPath, args) {
+  if (isNil(configPath) || !is(String, configPath)) {
+    throw new Error(
+      `You must specify a default config path (as string) to command precommit`,
+    );
+  }
 
-const [, , ...args] = process.argv;
+  const hasArg = p => has(p, args);
+  const getArg = p => prop(p, args);
+  const argIsString = p => propIs(String, p, args);
 
-const useBuiltinConfig =
-  !args.includes('--config') &&
-  !hasFile('.lintstagedrc') &&
-  !hasFile('lintstaged.config.js') &&
-  !hasPkgProp('lintstaged');
+  const useBuiltinConfig =
+    !hasArg('config') &&
+    !hasFile('.lintstagedrc') &&
+    !hasFile('lintstaged.config.js') &&
+    !hasPkgProp('lint-staged');
 
-const config = useBuiltinConfig
-  ? ['--config', hereRelative('../config/lintstagedrc.js')]
-  : [];
+  const config = useBuiltinConfig
+    ? ['--config', configPath]
+    : hasArg('config') && argIsString('config')
+      ? ['--config', getArg('config')]
+      : [];
 
-const lintStagedResult = spawn.sync(resolveBin('lint-staged'), [...config], {
-  stdio: 'inherit',
-});
+  const flags = reformatFlags(args, ['config']);
 
-if (lintStagedResult.status !== 0) {
-  process.exit(lintStagedResult.status);
-} else {
-  const validateResult = spawn.sync(
-    getPackageManagerBin(),
-    ['run', 'validate'],
-    {
-      stdio: 'inherit',
-    },
-  );
+  const { _: files } = args;
 
-  process.exit(validateResult.status);
+  const bin = resolveBin('lint-staged');
+  const cmdArgs = [...config, ...flags, ...files];
+
+  const result = await asyncSpawn(bin, cmdArgs);
+
+  if (result > 0)
+    throw new Error(`frans-scripts precommit exited with code ${result}`);
 }
+
+module.exports = precommit;

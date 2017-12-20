@@ -1,5 +1,5 @@
 {
-  "extends": ["./src/config/eslintrc.js"],
+  "extends": ["./src/config/lint/eslint.config.js"],
   "rules": {
     "global-require": "off",
     "no-process-exit": "off",

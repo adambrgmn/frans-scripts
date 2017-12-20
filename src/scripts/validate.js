@@ -1,48 +1,43 @@
-const spawn = require('cross-spawn');
-const {
-  parseEnv,
-  resolveBin,
-  ifScript,
-  getConcurrentlyArgs,
-  getPackageManagerBin,
-} = require('../utils');
+const Listr = require('listr');
+const isCI = require('is-ci');
+const { asyncSpawn, resolveFransScripts } = require('../utils');
 
-// precommit runs linting and tests on the relevant files
-// so those scripts don't need to be run if we're running
-// this in the context of a precommit hook.
-const precommit = parseEnv('SCRIPTS_PRECOMMIT', false);
-const validateScripts = process.argv[2];
-const useDefaultScripts = typeof validateScripts !== 'string';
+async function spawn(bin, args) {
+  const proc = asyncSpawn(bin, args, {
+    shell: true,
+    env: { ...process.env, FORCE_COLOR: !isCI },
+  });
 
-const pm = getPackageManagerBin();
-const extraDashDash = pm === 'npm' ? '-- ' : '';
+  const out = [];
 
-const scripts = useDefaultScripts
-  ? {
-      build: ifScript('build', `${getPackageManagerBin()} run build --silent`),
-      lint: precommit
-        ? null
-        : ifScript('lint', `${getPackageManagerBin()} run lint --quiet`),
-      test: precommit
-        ? null
-        : ifScript(
-            'test',
-            `${getPackageManagerBin()} run test --silent ${extraDashDash}--coverage`,
-          ),
-      flow: ifScript('flow', `${getPackageManagerBin()} run flow --silent`),
-    }
-  : validateScripts.split(',').reduce(
-      (scriptsToRun, name) =>
-        Object.assign({}, scriptsToRun, {
-          [name]: `${getPackageManagerBin()} run ${name} --silent`,
-        }),
-      {},
-    );
+  proc.cp.stderr.on('data', d => out.push(d.toString()));
+  proc.cp.stdout.on('data', d => out.push(d.toString()));
 
-const result = spawn.sync(
-  resolveBin('concurrently'),
-  getConcurrentlyArgs(scripts),
-  { stdio: 'inherit' },
-);
+  return proc.catch(() => {
+    throw new Error(out.join(''));
+  });
+}
 
-process.exit(result.status);
+async function validate() {
+  const fs = resolveFransScripts();
+
+  const tasks = new Listr([
+    {
+      title: 'Run lint',
+      task: () => spawn(fs, ['lint']),
+    },
+    {
+      title: 'Run test',
+      task: () =>
+        spawn(fs, ['test', '--silent', '--no-watch', '--passWithNoTests']),
+    },
+    {
+      title: 'Run build',
+      task: () => spawn(fs, ['build']),
+    },
+  ]);
+
+  await tasks.run();
+}
+
+module.exports = validate;
