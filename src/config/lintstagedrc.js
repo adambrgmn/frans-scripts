@@ -1,4 +1,4 @@
-const { resolveFransScripts, resolveBin, isOptedOut } = require('../utils');
+const { resolveFransScripts, resolveBin } = require('../utils');
 
 const fransScripts = resolveFransScripts();
 const doctoc = resolveBin('doctoc');
@@ -12,10 +12,10 @@ module.exports = {
       'git add README.md',
     ],
     '**/*.+(js|jsx|json|less|scss|sass|css|ts|md)': [
-      isOptedOut('autoformat', null, `${fransScripts} format`),
+      `${fransScripts} format`,
       `${fransScripts} test --passWithNoTests --findRelatedTests`,
       `${fransScripts} lint`,
-      isOptedOut('autoformat', null, 'git add'),
+      'git add',
     ].filter(Boolean),
   },
 };
