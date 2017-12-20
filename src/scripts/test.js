@@ -12,7 +12,7 @@ const watch =
   !args.includes('--no-watch') &&
   !args.includes('--coverage') &&
   !args.includes('--updateSnapshot')
-    ? ['--watch']
+    ? ['--watch', '--onlyChanged']
     : [];
 
 const config =
