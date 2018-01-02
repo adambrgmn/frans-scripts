@@ -18,21 +18,23 @@ const convertArgs = args => {
   }, {});
 };
 
-async function release(configPath, args) {
+function release(configPath) {
   if (configPath != null && typeof configPath !== 'string') {
     throw new Error(
       'If you specify a configPath to command release it must be a string',
     );
   }
 
-  const useBuiltinConfig = configPath != null && !hasPkgProp('release');
+  return async args => {
+    const useBuiltinConfig = configPath != null && !hasPkgProp('release');
 
-  if (useBuiltinConfig) {
-    await hijackCosmiconfig('semantic-release', configPath, 'release');
-  }
+    if (useBuiltinConfig) {
+      await hijackCosmiconfig('semantic-release', configPath, 'release');
+    }
 
-  const convertedArgs = convertArgs(args);
-  return require('semantic-release')(convertedArgs);
+    const convertedArgs = convertArgs(args);
+    return require('semantic-release')(convertedArgs);
+  };
 }
 
 module.exports = release;

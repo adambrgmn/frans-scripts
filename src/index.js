@@ -13,14 +13,16 @@ const wrapAction = action => async args => {
 };
 
 const attachCommand = cli => ([command, { config, description }]) => {
+  const script = require(`./scripts/${command}`);
+  const actionHandler = script(config, cli);
+
   cli
     .command(command)
     .describe(description)
     .action(
       wrapAction(args => {
         setScriptEnv(command);
-        const script = require(`./scripts/${command}`);
-        return script(config, args);
+        return actionHandler(args);
       }),
     );
 };
