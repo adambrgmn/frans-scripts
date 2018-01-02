@@ -1,7 +1,6 @@
-const winston = require('winston');
 const { isNil, is, has, prop, propIs } = require('ramda');
+const runScript = require('../utils/run-script');
 const {
-  asyncSpawn,
   resolveBin,
   hasFile,
   hasPkgProp,
@@ -65,11 +64,7 @@ async function lint(configPath, args) {
   const bin = resolveBin('eslint');
   const commandArgs = [...files, ...config, ...ignore, ...cache, ...flags];
 
-  winston.debug(`Will call ${bin} with args: ${commandArgs.join(' ')}`);
-  const result = await asyncSpawn(bin, commandArgs);
-
-  if (result > 0)
-    throw new Error(`frans-scripts lint exited with code ${result}`);
+  return runScript(bin, commandArgs);
 }
 
 module.exports = lint;

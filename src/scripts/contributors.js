@@ -1,13 +1,12 @@
-const { asyncSpawn, resolveBin } = require('../utils');
+const runScript = require('../utils/run-script');
+const { resolveBin } = require('../utils');
 
-async function contributors(_, { _: args }) {
-  const result = await asyncSpawn(
-    resolveBin('all-contributors-cli', { executable: 'all-contributors' }),
-    args,
-  );
+function contributors(_, { _: args }) {
+  const bin = resolveBin('all-contributors-cli', {
+    executable: 'all-contributors',
+  });
 
-  if (result > 0)
-    throw new Error(`frans-scripts contributors exited with code ${result}`);
+  return runScript(bin, args);
 }
 
 module.exports = contributors;

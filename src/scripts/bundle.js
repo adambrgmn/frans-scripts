@@ -1,9 +1,14 @@
 const { promisify } = require('util');
 const rimraf = promisify(require('rimraf'));
 const { isNil, is, has, prop, propIs } = require('ramda');
-const Listr = require('listr');
-const spawn = require('cross-spawn');
-const { resolveBin, hasFile, fromRoot, reformatFlags } = require('../utils');
+const runScript = require('../utils/run-script');
+const {
+  resolveBin,
+  hasFile,
+  fromRoot,
+  reformatFlags,
+  reduceP,
+} = require('../utils');
 
 async function bundle(configPath, args) {
   if (isNil(configPath) || !is(String, configPath)) {
@@ -50,47 +55,19 @@ async function bundle(configPath, args) {
     const crossEnv = resolveBin('cross-env');
     const rollup = resolveBin('rollup');
 
-    return {
-      title: `Bundle ${format}`,
-      task: () =>
-        new Promise((resolve, reject) => {
-          const proc = spawn(crossEnv, [
-            ...envVars,
-            rollup,
-            ...config,
-            ...flags,
-          ]);
-
-          const err = [];
-
-          proc.stdout.on('data', data => console.log(data.toString()));
-          proc.stderr.on('data', data => err.push(data.toString()));
-
-          proc.on('close', code => {
-            if (code > 0) {
-              const error = new Error(err.join('\n'));
-              reject(error);
-            }
-
-            resolve();
-          });
-        }),
-    };
+    return runScript(crossEnv, [...envVars, rollup, ...config, ...flags]);
   });
 
-  const taskRunner = new Listr([
-    {
-      title: `Clean "${outputDir}/"`,
-      task: () => rimraf(fromRoot(outputDir)),
-      skip: () => !useBuiltinClean,
-    },
-    {
-      title: `Bundle files to "${outputDir}/"`,
-      task: () => new Listr(tasks, { concurrent: true }),
-    },
-  ]);
+  return reduceP([
+    () => {
+      if (useBuiltinClean) {
+        return rimraf(fromRoot(outputDir));
+      }
 
-  await taskRunner.run();
+      return Promise.resolve();
+    },
+    ...tasks,
+  ]);
 }
 
 module.exports = bundle;

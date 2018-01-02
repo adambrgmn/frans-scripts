@@ -1,7 +1,7 @@
 const { isNil, prop } = require('ramda');
 const { toCamelCase } = require('strman');
-const winston = require('winston');
 const hijackCosmiconfig = require('../utils/hijack-cosmiconfig');
+const { hasPkgProp } = require('../utils');
 
 const convertArgs = args => {
   const getProp = p => prop(p, args);
@@ -18,27 +18,21 @@ const convertArgs = args => {
   }, {});
 };
 
-async function contributors(configPath, args) {
+async function release(configPath, args) {
   if (configPath != null && typeof configPath !== 'string') {
     throw new Error(
       'If you specify a configPath to command release it must be a string',
     );
   }
 
-  if (configPath) {
+  const useBuiltinConfig = configPath != null && !hasPkgProp('release');
+
+  if (useBuiltinConfig) {
     await hijackCosmiconfig('semantic-release', configPath, 'release');
   }
 
-  try {
-    const convertedArgs = convertArgs({ ...args, dryRun: true });
-    await require('semantic-release')(convertedArgs);
-  } catch (err) {
-    if (err.message.includes('no new version is released')) {
-      winston.info(err.message);
-    } else {
-      throw err;
-    }
-  }
+  const convertedArgs = convertArgs(args);
+  return require('semantic-release')(convertedArgs);
 }
 
-module.exports = contributors;
+module.exports = release;

@@ -47,7 +47,7 @@ const output = {
 };
 
 const useBuiltinConfig = !hasFile('.babelrc') && !hasPkgProp('babel');
-const babelPresets = useBuiltinConfig ? [here('../config/babelrc.js')] : [];
+const babelPresets = useBuiltinConfig ? [here('../build/babel.config.js')] : [];
 
 module.exports = {
   input,
