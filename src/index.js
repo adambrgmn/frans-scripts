@@ -1,17 +1,23 @@
 const sade = require('sade');
-const winston = require('winston');
-const { toPairs, forEach, map, has, prop } = require('ramda');
-const { wrapAsyncCliAction, setScriptEnv } = require('./utils');
+const { toPairs, forEach, map, prop } = require('ramda');
+const { setScriptEnv } = require('./utils');
 const defaults = require('./defaults');
+
+const wrapAction = action => async args => {
+  try {
+    await Promise.resolve().then(() => action(args));
+  } catch (err) {
+    console.error(err);
+    process.exitCode = typeof err.code === 'number' ? err.code : 1;
+  }
+};
 
 const attachCommand = cli => ([command, { config, description }]) => {
   cli
     .command(command)
     .describe(description)
     .action(
-      wrapAsyncCliAction(args => {
-        winston.level = has('debug', args) ? 'debug' : 'info';
-
+      wrapAction(args => {
         setScriptEnv(command);
         const script = require(`./scripts/${command}`);
         return script(config, args);
@@ -33,18 +39,12 @@ function fransScripts(
   actions = defaults.actions,
   { name, version, description } = defaults.cliOptions,
 ) {
-  try {
-    winston.cli();
-    const cli = sade(name);
+  const cli = sade(name);
 
-    cli.version(version).describe(description);
-    attachCommands(cli, actions);
+  cli.version(version).describe(description);
+  attachCommands(cli, actions);
 
-    cli.parse(process.argv);
-  } catch (err) {
-    winston.error(err.message, { error: err });
-    process.exitCode = err.code || 1;
-  }
+  cli.parse(process.argv);
 }
 
 module.exports = fransScripts;

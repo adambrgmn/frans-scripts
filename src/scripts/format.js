@@ -1,10 +1,9 @@
-const winston = require('winston');
 const { has, propIs, prop, isNil, is } = require('ramda');
+const runScript = require('../utils/run-script');
 const {
   hasFile,
   hasPkgProp,
   resolveBin,
-  asyncSpawn,
   reformatFlags,
   fromRoot,
 } = require('../utils');
@@ -62,11 +61,7 @@ async function format(configPath, args) {
   const bin = resolveBin('prettier');
   const commandArgs = [...flags, ...config, ...ignore, ...write, ...files];
 
-  winston.debug(`Will call ${bin} with args: ${commandArgs.join(' ')}`);
-  const result = await asyncSpawn(bin, commandArgs);
-
-  if (result > 0)
-    throw new Error(`frans-scripts format exited with code ${result}`);
+  return runScript(bin, commandArgs);
 }
 
 module.exports = format;

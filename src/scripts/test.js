@@ -1,7 +1,7 @@
 const isCi = require('is-ci');
 const { isNil, is, has, prop, propIs } = require('ramda');
+const runScript = require('../utils/run-script');
 const {
-  asyncSpawn,
   resolveBin,
   hasFile,
   hasPkgProp,
@@ -46,15 +46,12 @@ async function test(configPath, args) {
 
   const files = getArg('_');
 
-  const result = await asyncSpawn(resolveBin('jest'), [
+  return runScript(resolveBin('jest'), [
     ...config,
     ...watch,
     ...flags,
     ...files,
   ]);
-
-  if (result > 0)
-    throw new Error(`frans-scripts test exited with code ${result}`);
 }
 
 module.exports = test;

@@ -1,9 +1,8 @@
-const winston = require('winston');
 const { isNil, is, has, prop, propIs } = require('ramda');
 const { promisify } = require('util');
 const rimraf = promisify(require('rimraf'));
+const runScript = require('../utils/run-script');
 const {
-  asyncSpawn,
   resolveBin,
   hasFile,
   hasPkgProp,
@@ -68,18 +67,9 @@ async function build(configPath, args) {
   ];
 
   const out = fromRoot(outDir[1]);
-  if (useBuiltinClean) {
-    winston.debug(`Clean "${out}"`);
-    await rimraf(out);
-  } else {
-    winston.debug(`Skip cleaning "${out}"`);
-  }
+  if (useBuiltinClean) await rimraf(out);
 
-  winston.debug(`Will call ${bin} – with args: ${commandArgs.join(' ')}`);
-  const result = await asyncSpawn(bin, commandArgs);
-
-  if (result > 0)
-    throw new Error(`frans-scripts build exited with code ${result}`);
+  return runScript(bin, commandArgs);
 }
 
 module.exports = build;

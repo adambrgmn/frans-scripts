@@ -1,11 +1,6 @@
 const { has, propIs, prop, isNil, is } = require('ramda');
-const {
-  hasFile,
-  hasPkgProp,
-  resolveBin,
-  asyncSpawn,
-  reformatFlags,
-} = require('../utils');
+const runScript = require('../utils/run-script');
+const { hasFile, hasPkgProp, resolveBin, reformatFlags } = require('../utils');
 
 async function precommit(configPath, args) {
   if (isNil(configPath) || !is(String, configPath)) {
@@ -37,10 +32,7 @@ async function precommit(configPath, args) {
   const bin = resolveBin('lint-staged');
   const cmdArgs = [...config, ...flags, ...files];
 
-  const result = await asyncSpawn(bin, cmdArgs);
-
-  if (result > 0)
-    throw new Error(`frans-scripts precommit exited with code ${result}`);
+  return runScript(bin, cmdArgs);
 }
 
 module.exports = precommit;

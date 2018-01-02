@@ -1,4 +1,3 @@
-const winston = require('winston');
 const fs = require('fs');
 const path = require('path');
 const arrify = require('arrify');
@@ -142,20 +141,6 @@ const getPackageManagerBin = () => {
 };
 
 /* Added after refactor */
-
-const assureAsync = action => (...args) =>
-  Promise.resolve().then(() => action(...args));
-
-const wrapAsyncCliAction = action => async (...args) => {
-  try {
-    const asyncAction = assureAsync(action);
-    await asyncAction(...args);
-  } catch (err) {
-    winston.error(err);
-    process.exitCode = err.code || 1;
-  }
-};
-
 const asyncSpawn = (bin, args, opts = { stdio: 'inherit' }) => {
   const cp = spawn(bin, args, opts);
   const promise = new Promise((resolve, reject) => {
@@ -192,6 +177,9 @@ const setScriptEnv = cmd => {
   process.env[envName] = true;
 };
 
+const reduceP = pList =>
+  pList.reduce((acc, p) => acc.then(p), Promise.resolve());
+
 module.exports = {
   appDirectory,
   envIsSet,
@@ -211,9 +199,9 @@ module.exports = {
   resolveBin,
   resolveFransScripts,
   getPackageManagerBin,
-  wrapAsyncCliAction,
   asyncSpawn,
   reformatFlags,
   toConstant,
   setScriptEnv,
+  reduceP,
 };
