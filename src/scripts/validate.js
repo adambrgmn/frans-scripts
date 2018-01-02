@@ -1,17 +1,18 @@
 const runScript = require('../utils/run-script');
-const { resolveFransScripts, reduceP } = require('../utils');
+const pEachSeries = require('p-each-series');
+const { resolveFransScripts } = require('../utils');
 
 async function validate() {
   const fs = resolveFransScripts();
 
   const tasks = [
-    () => runScript(fs, ['lint']),
-    () =>
-      runScript(fs, ['test', '--silent', '--no-watch', '--passWithNoTests']),
-    () => runScript(fs, ['build']),
+    ['lint'],
+    ['test', '--silent', '--no-watch', '--passWithNoTests'],
+    ['build'],
   ];
 
-  return reduceP(tasks);
+  const iterator = t => runScript(fs, t);
+  return pEachSeries(tasks, iterator);
 }
 
 module.exports = validate;

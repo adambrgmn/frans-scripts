@@ -177,9 +177,6 @@ const setScriptEnv = cmd => {
   process.env[envName] = true;
 };
 
-const reduceP = pList =>
-  pList.reduce((acc, p) => acc.then(p), Promise.resolve());
-
 module.exports = {
   appDirectory,
   envIsSet,
@@ -203,5 +200,4 @@ module.exports = {
   reformatFlags,
   toConstant,
   setScriptEnv,
-  reduceP,
 };

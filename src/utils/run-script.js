@@ -1,17 +1,19 @@
-const spawn = require('cross-spawn');
+const execa = require('execa');
+const isCi = require('is-ci');
 
-const runScript = (bin, args, opts = { stdio: 'inherit' }) => {
-  const cp = spawn(bin, args, opts);
-  const promise = new Promise((resolve, reject) => {
-    cp.on('close', code => {
-      if (code > 0) return reject(code);
-      return resolve();
-    });
+const runScript = (bin, args, interactive = false, opts = {}) => {
+  const proc = execa(bin, args, {
+    ...opts,
+    stdio: interactive && 'inherit',
+    env: { ...process.env, FORCE_COLOR: !isCi },
   });
 
-  Object.defineProperty(promise, 'cp', { value: cp });
-
-  return promise;
+  return proc.then(result => {
+    if (!interactive) {
+      console.log(result.stdout);
+      console.error(result.stderr);
+    }
+  });
 };
 
 module.exports = runScript;

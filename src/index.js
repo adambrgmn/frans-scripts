@@ -7,7 +7,7 @@ const wrapAction = action => async args => {
   try {
     await Promise.resolve().then(() => action(args));
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     process.exitCode = typeof err.code === 'number' ? err.code : 1;
   }
 };

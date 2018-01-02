@@ -46,12 +46,11 @@ async function test(configPath, args) {
 
   const files = getArg('_');
 
-  return runScript(resolveBin('jest'), [
-    ...config,
-    ...watch,
-    ...flags,
-    ...files,
-  ]);
+  return runScript(
+    resolveBin('jest'),
+    [...config, ...watch, ...flags, ...files],
+    watch,
+  );
 }
 
 module.exports = test;

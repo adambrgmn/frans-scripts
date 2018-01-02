@@ -6,7 +6,7 @@ function contributors(_, { _: args }) {
     executable: 'all-contributors',
   });
 
-  return runScript(bin, args);
+  return runScript(bin, args, true);
 }
 
 module.exports = contributors;
