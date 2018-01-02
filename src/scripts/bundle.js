@@ -1,14 +1,9 @@
 const { promisify } = require('util');
 const rimraf = promisify(require('rimraf'));
 const { isNil, is, has, prop, propIs } = require('ramda');
+const pEachSeries = require('p-each-series');
 const runScript = require('../utils/run-script');
-const {
-  resolveBin,
-  hasFile,
-  fromRoot,
-  reformatFlags,
-  reduceP,
-} = require('../utils');
+const { resolveBin, hasFile, fromRoot, reformatFlags } = require('../utils');
 
 async function bundle(configPath, args) {
   if (isNil(configPath) || !is(String, configPath)) {
@@ -58,16 +53,19 @@ async function bundle(configPath, args) {
     return runScript(crossEnv, [...envVars, rollup, ...config, ...flags]);
   });
 
-  return reduceP([
-    () => {
-      if (useBuiltinClean) {
-        return rimraf(fromRoot(outputDir));
-      }
+  return pEachSeries(
+    [
+      () => {
+        if (useBuiltinClean) {
+          return rimraf(fromRoot(outputDir));
+        }
 
-      return Promise.resolve();
-    },
-    ...tasks,
-  ]);
+        return Promise.resolve();
+      },
+      ...tasks,
+    ],
+    () => Promise.resolve(),
+  );
 }
 
 module.exports = bundle;

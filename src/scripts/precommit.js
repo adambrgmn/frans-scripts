@@ -32,7 +32,7 @@ async function precommit(configPath, args) {
   const bin = resolveBin('lint-staged');
   const cmdArgs = [...config, ...flags, ...files];
 
-  return runScript(bin, cmdArgs);
+  return runScript(bin, cmdArgs, true);
 }
 
 module.exports = precommit;
