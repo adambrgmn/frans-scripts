@@ -31,13 +31,14 @@ const wrapAction = action => args =>
     })
     .catch(handleError);
 
-const attachCommand = cli => ([command, { config, description }]) => {
+const attachCommand = cli => ([command, { script, config, description }]) => {
   debug(`Setup action handler for script ${command}`);
+  debug(script ? `With script src: ${script}` : 'With built in script');
   debug(`With config: ${config}`);
   debug(`With description: ${description}`);
 
-  const script = require(`./scripts/${command}`);
-  const actionHandler = script(config, cli);
+  const fn = require(script || `./scripts/${command}`);
+  const actionHandler = fn(config, cli);
 
   cli
     .command(command)
