@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:precommit');
 const { has, propIs, prop, isNil, is } = require('ramda');
 const runScript = require('../utils/run-script');
 const { hasFile, hasPkgProp, resolveBin, reformatFlags } = require('../utils');
@@ -10,6 +11,8 @@ function precommit(configPath) {
   }
 
   return async args => {
+    debug('Setup script precommit');
+
     const hasArg = p => has(p, args);
     const getArg = p => prop(p, args);
     const argIsString = p => propIs(String, p, args);
@@ -19,6 +22,7 @@ function precommit(configPath) {
       !hasFile('.lintstagedrc') &&
       !hasFile('lintstaged.config.js') &&
       !hasPkgProp('lint-staged');
+    debug(`Use builtin config: ${useBuiltinConfig}`);
 
     const config = useBuiltinConfig
       ? ['--config', configPath]

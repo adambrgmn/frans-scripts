@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:build');
 const { isNil, is, has, prop, propIs } = require('ramda');
 const { promisify } = require('util');
 const rimraf = promisify(require('rimraf'));
@@ -18,17 +19,26 @@ function build(configPath) {
   }
 
   return async args => {
+    debug('Setup script build');
     const hasArg = p => has(p, args);
     const getArg = p => prop(p, args);
     const argIsString = p => propIs(String, p, args);
 
     const useBuiltinConfig =
       !hasArg('presets') && !hasFile('.babelrc') && !hasPkgProp('babel');
+    debug(`Use builtin config: ${useBuiltinConfig}`);
 
     const useBuiltinIgnore = !hasArg('ignore');
+    debug(`Use builtin ignore: ${useBuiltinIgnore}`);
+
     const useBuiltinOutDir = !hasArg('out-dir') || !argIsString('out-dir');
+    debug(`Use builtin out dir: ${useBuiltinOutDir}`);
+
     const useBuiltinCopy = !hasArg('copy-files') || getArg('copy-files');
+    debug(`Use builtin copy: ${useBuiltinCopy}`);
+
     const useBuiltinClean = !hasArg('clean') || getArg('clean');
+    debug(`Use builtin clean: ${useBuiltinClean}`);
 
     const config = useBuiltinConfig
       ? ['--presets', configPath]

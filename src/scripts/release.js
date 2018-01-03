@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:release');
 const { isNil, prop } = require('ramda');
 const { toCamelCase } = require('strman');
 const hijackCosmiconfig = require('../utils/hijack-cosmiconfig');
@@ -26,7 +27,10 @@ function release(configPath) {
   }
 
   return async args => {
+    debug('Setup script release');
+
     const useBuiltinConfig = configPath != null && !hasPkgProp('release');
+    debug(`Use builtin config: ${useBuiltinConfig}`);
 
     if (useBuiltinConfig) {
       await hijackCosmiconfig('semantic-release', configPath, 'release');

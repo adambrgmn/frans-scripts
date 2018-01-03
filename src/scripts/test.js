@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:test');
 const isCi = require('is-ci');
 const { isNil, is, has, prop, propIs } = require('ramda');
 const runScript = require('../utils/run-script');
@@ -17,6 +18,9 @@ function test(configPath) {
   }
 
   return async args => {
+    debug('Setup script test');
+
+    debug('Set NODE_ENV and BABEL_ENV = "test"');
     process.env.NODE_ENV = 'test';
     process.env.BABEL_ENV = 'test';
 
@@ -26,6 +30,7 @@ function test(configPath) {
 
     const useBuiltinConfig =
       !hasArg('config') && !hasFile('jest.config.js') && !hasPkgProp('jest');
+    debug(`Use builtin config: ${useBuiltinConfig}`);
 
     const hasNoWatchArg = hasArg('watch') && !getArg('watch');
     const useBuiltinWatch =
@@ -34,6 +39,7 @@ function test(configPath) {
       !parseEnv('SCRIPTS_PRECOMMIT', false) &&
       !hasArg('coverage') &&
       !hasArg('updateSnapshot');
+    debug(`Use builtin watch: ${useBuiltinWatch}`);
 
     const config = useBuiltinConfig
       ? ['--config', configPath]
