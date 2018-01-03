@@ -1,19 +1,14 @@
 const execa = require('execa');
 const isCi = require('is-ci');
 
-const runScript = (bin, args, interactive = false, opts = {}) => {
+const runScript = (bin, args, opts = {}) => {
   const proc = execa(bin, args, {
+    stdio: 'inherit',
     ...opts,
-    stdio: interactive && 'inherit',
-    env: { ...process.env, FORCE_COLOR: !isCi },
+    env: { ...process.env, FORCE_COLOR: !isCi, ...opts.env },
   });
 
-  return proc.then(result => {
-    if (!interactive) {
-      console.log(result.stdout);
-      console.error(result.stderr);
-    }
-  });
+  return proc;
 };
 
 module.exports = runScript;

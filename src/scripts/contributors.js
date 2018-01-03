@@ -7,7 +7,7 @@ function contributors() {
       executable: 'all-contributors',
     });
 
-    return runScript(bin, args, true);
+    return runScript(bin, args);
   };
 }
 

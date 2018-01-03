@@ -33,7 +33,7 @@ function precommit(configPath) {
     const bin = resolveBin('lint-staged');
     const cmdArgs = [...config, ...flags, ...files];
 
-    return runScript(bin, cmdArgs, true);
+    return runScript(bin, cmdArgs);
   };
 }
 

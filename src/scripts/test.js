@@ -47,11 +47,12 @@ function test(configPath) {
 
     const files = getArg('_');
 
-    return runScript(
-      resolveBin('jest'),
-      [...config, ...watch, ...flags, ...files],
-      watch,
-    );
+    return runScript(resolveBin('jest'), [
+      ...config,
+      ...watch,
+      ...flags,
+      ...files,
+    ]);
   };
 }
 
