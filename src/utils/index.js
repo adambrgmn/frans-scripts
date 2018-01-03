@@ -1,10 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const arrify = require('arrify');
-const has = require('lodash.has');
 const readPkgUp = require('read-pkg-up');
 const which = require('which');
-const spawn = require('cross-spawn');
 const R = require('ramda');
 const { toSnakeCase, toUpperCase } = require('strman');
 
@@ -13,7 +11,6 @@ const { pkg, path: pkgPath } = readPkgUp.sync({
 });
 const appDirectory = path.dirname(pkgPath);
 
-// eslint-disable-next-line complexity
 function resolveBin(
   modName,
   { executable = modName, cwd = process.cwd() } = {},
@@ -34,7 +31,9 @@ function resolveBin(
     if (fullPathToBin === pathFromWhich) {
       return executable;
     }
-    return fullPathToBin.replace(cwd, '.');
+
+    const exec = fullPathToBin.replace(cwd, '.');
+    return exec;
   } catch (error) {
     if (pathFromWhich) {
       return executable;
@@ -56,7 +55,7 @@ const hasFile = (...p) => fs.existsSync(fromRoot(...p));
 const ifFile = (files, t, f) =>
   arrify(files).some(file => hasFile(file)) ? t : f;
 
-const hasPkgProp = props => arrify(props).some(prop => has(pkg, prop));
+const hasPkgProp = props => arrify(props).some(prop => R.has(prop, pkg));
 
 const hasPkgSubProp = pkgProp => props =>
   hasPkgProp(arrify(props).map(p => `${pkgProp}.${p}`));
@@ -64,21 +63,21 @@ const hasPkgSubProp = pkgProp => props =>
 const ifPkgSubProp = pkgProp => (props, t, f) =>
   hasPkgSubProp(pkgProp)(props) ? t : f;
 
-const hasScript = hasPkgSubProp('scripts');
-const hasPeerDep = hasPkgSubProp('peerDependencies');
 const hasDep = hasPkgSubProp('dependencies');
 const hasDevDep = hasPkgSubProp('devDependencies');
+const hasPeerDep = hasPkgSubProp('peerDependencies');
 const hasAnyDep = args => [hasDep, hasDevDep, hasPeerDep].some(fn => fn(args));
 
 const ifPeerDep = ifPkgSubProp('peerDependencies');
 const ifDep = ifPkgSubProp('dependencies');
 const ifDevDep = ifPkgSubProp('devDependencies');
 const ifAnyDep = (deps, t, f) => (hasAnyDep(arrify(deps)) ? t : f);
-const ifScript = ifPkgSubProp('scripts');
+
+const toConstant = R.pipe(toSnakeCase, toUpperCase);
 
 function envIsSet(name) {
   return (
-    process.env.hasOwnProperty(name) && // eslint-disable-line
+    Object.prototype.hasOwnProperty.call(process.env, name) &&
     process.env[name] &&
     process.env[name] !== 'undefined'
   );
@@ -91,68 +90,9 @@ function parseEnv(name, def) {
   return def;
 }
 
-function getConcurrentlyArgs(scripts, { killOthers = true } = {}) {
-  const colors = [
-    'bgBlue',
-    'bgGreen',
-    'bgMagenta',
-    'bgCyan',
-    'bgWhite',
-    'bgRed',
-    'bgBlack',
-    'bgYellow',
-  ];
-
-  // eslint-disable-next-line
-  scripts = Object.entries(scripts).reduce((all, [name, script]) => {
-    if (script) {
-      return Object.assign({}, all, { [name]: script });
-    }
-    return all;
-  }, {});
-
-  const prefixColors = Object.keys(scripts)
-    .reduce(
-      (pColors, _s, i) =>
-        pColors.concat([`${colors[i % colors.length]}.bold.reset`]),
-      [],
-    )
-    .join(',');
-
-  // prettier-ignore
-  return [
-    killOthers ? '--kill-others-on-fail' : null,
-    '--prefix', '[{name}]',
-    '--names', Object.keys(scripts).join(','),
-    '--prefix-colors', prefixColors,
-    ...Object.values(scripts).map(s => JSON.stringify(s)), // stringify escapes quotes ✨
-  ].filter(Boolean)
-}
-
-const getPackageManagerBin = () => {
-  try {
-    resolveBin('yarn');
-  } catch (err) {
-    return 'npm';
-  }
-
-  if (hasFile('yarn.lock')) return 'yarn';
-  return 'npm';
-};
-
-/* Added after refactor */
-const asyncSpawn = (bin, args, opts = { stdio: 'inherit' }) => {
-  const cp = spawn(bin, args, opts);
-  const promise = new Promise((resolve, reject) => {
-    cp.on('close', code => {
-      if (code > 0) return reject(code);
-      return resolve();
-    });
-  });
-
-  Object.defineProperty(promise, 'cp', { value: cp });
-
-  return promise;
+const setScriptEnv = cmd => {
+  const envName = toConstant(`scripts ${cmd}`);
+  process.env[envName] = true;
 };
 
 const reformatFlags = (flags, ignore = []) => {
@@ -170,33 +110,21 @@ const reformatFlags = (flags, ignore = []) => {
   )(flags);
 };
 
-const toConstant = R.pipe(toSnakeCase, toUpperCase);
-
-const setScriptEnv = cmd => {
-  const envName = toConstant(`scripts ${cmd}`);
-  process.env[envName] = true;
-};
-
 module.exports = {
   appDirectory,
   envIsSet,
   fromRoot,
-  getConcurrentlyArgs,
   hasFile,
   hasPkgProp,
-  hasScript,
   ifAnyDep,
   ifDep,
   ifDevDep,
   ifFile,
   ifPeerDep,
-  ifScript,
   parseEnv,
   pkg,
   resolveBin,
   resolveFransScripts,
-  getPackageManagerBin,
-  asyncSpawn,
   reformatFlags,
   toConstant,
   setScriptEnv,
