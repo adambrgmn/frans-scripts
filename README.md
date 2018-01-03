@@ -72,20 +72,26 @@ contents of:
 { "extends": "./node_modules/frans-scripts/eslint.js" }
 ```
 
-> Note: for now, you'll have to include an `.eslintignore` in your project until
-> [this eslint issue is resolved](https://github.com/eslint/eslint/issues/9227).
-
 Or, for `babel`, a `.babelrc` with:
 
 ```json
 { "presets": ["frans-scripts/babel"] }
 ```
 
-Or, for `jest`:
+Or, for `jest`, a `jest.config.js`:
 
 ```javascript
-const { jest: jestConfig } = require('frans-scripts/config');
+const jestConfig = require('frans-scripts/jest');
 module.exports = Object.assign(jestConfig, {
+  // your overrides here
+});
+```
+
+Or, for `prettier`, a `prettier.config.js`:
+
+```javascript
+const prettierConfig = require('frans-scripts/prettier');
+module.exports = Object.assign(prettierConfig, {
   // your overrides here
 });
 ```
