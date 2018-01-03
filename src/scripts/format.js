@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:format');
 const { has, propIs, prop, isNil, is } = require('ramda');
 const runScript = require('../utils/run-script');
 const {
@@ -16,6 +17,8 @@ function format(configPath) {
   }
 
   return async args => {
+    debug('Setup script format');
+
     const hasArg = p => has(p, args);
     const getArg = p => prop(p, args);
     const argIsString = p => propIs(String, p, args);
@@ -26,11 +29,17 @@ function format(configPath) {
       !hasFile('prettier.config.js') &&
       !hasPkgProp('prettier');
 
+    debug(`Use builtin config: ${useBuiltinConfig}`);
+
     const useGitignore =
       hasFile('.gitignore') &&
       !hasFile('.prettierignore') &&
       !hasArg('ignore-path');
+
+    debug(`Use .gitignore: ${useGitignore}`);
+
     const useBuiltinWrite = !hasArg('write') || getArg('write');
+    debug(`Use --write: ${useBuiltinWrite}`);
 
     const config = useBuiltinConfig
       ? ['--config', configPath]
@@ -62,7 +71,8 @@ function format(configPath) {
     const bin = resolveBin('prettier');
     const commandArgs = [...flags, ...config, ...ignore, ...write, ...files];
 
-    return runScript(bin, commandArgs);
+    const result = await runScript(bin, commandArgs);
+    return result;
   };
 }
 

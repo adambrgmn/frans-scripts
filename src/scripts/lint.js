@@ -1,3 +1,4 @@
+const debug = require('debug')('frans:lint');
 const { isNil, is, has, prop, propIs } = require('ramda');
 const runScript = require('../utils/run-script');
 const {
@@ -16,6 +17,8 @@ function lint(configPath) {
   }
 
   return async args => {
+    debug('Setup script lint');
+
     const hasArg = p => has(p, args);
     const getArg = p => prop(p, args);
     const argIsString = p => propIs(String, p, args);
@@ -26,14 +29,17 @@ function lint(configPath) {
       !hasFile('.eslintrc.json') &&
       !hasFile('.eslintrc.js') &&
       !hasPkgProp('eslintConfig');
+    debug(`Use builtin config: ${useBuiltinConfig}`);
 
     const useGitignore =
       hasFile('.gitignore') &&
       !hasArg('ignore-path') &&
       !hasFile('.eslintignore') &&
       !hasPkgProp('eslintIgnore');
+    debug(`Use gitignore: ${useGitignore}`);
 
     const useBuiltinCache = !hasArg('cache') || getArg('cache');
+    debug(`Use builtin cache: ${useBuiltinCache}`);
 
     const config = useBuiltinConfig
       ? ['--config', configPath]
