@@ -69,6 +69,8 @@ function fransScripts(
     const cli = sade(name);
 
     cli.version(version).describe(description);
+    cli.option('--debug, -d', 'Run scripts in debug mode');
+
     attachCommands(cli, actions);
 
     cli.parse(process.argv);
