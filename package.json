@@ -10,7 +10,14 @@
   "bin": {
     "frans-scripts": "dist/bin.js"
   },
-  "files": ["dist", "babel.js", "eslint.js", "prettier.js", "jest.js"],
+  "files": [
+    "dist",
+    "babel.js",
+    "eslint.js",
+    "prettier.js",
+    "jest.js",
+    "utils.js"
+  ],
   "scripts": {
     "add-contributor": "./src/bin.js contributors add",
     "test": "./src/bin.js test",
