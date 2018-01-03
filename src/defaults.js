@@ -28,9 +28,6 @@ exports.actions = {
     config: require.resolve('./config/precommit/lintstaged.config.js'),
     description: 'Run scripts against staged files with lint-staged',
   },
-  validate: {
-    description: 'Validate lib by running a series of scripts',
-  },
   release: {
     description: 'Publish scripts to npm with semantic-release',
   },
