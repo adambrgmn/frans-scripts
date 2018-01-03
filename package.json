@@ -6,9 +6,11 @@
     "node": ">= 8",
     "npm": ">= 5"
   },
+  "main": "dist/index.js",
   "bin": {
     "frans-scripts": "dist/bin.js"
   },
+  "files": ["dist", "babel.js", "eslint.js", "prettier.js", "jest.js"],
   "scripts": {
     "add-contributor": "./src/bin.js contributors add",
     "test": "./src/bin.js test",
@@ -20,14 +22,6 @@
     "precommit": "./src/bin.js precommit",
     "release": "./src/bin.js release"
   },
-  "files": [
-    "dist",
-    "babel.js",
-    "eslint.js",
-    "config.js",
-    "prettier.js",
-    "jest.js"
-  ],
   "keywords": [],
   "author":
     "Adam Bergman <adam@fransvilhelm.com> (https://github.com/adambrgmn)",
