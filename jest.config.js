@@ -1,4 +1,4 @@
-const { jest: jestConfig } = require('./src/config');
+const jestConfig = require('./src/config/test/jest.config');
 
 module.exports = Object.assign(jestConfig, {
   coverageThreshold: null,
