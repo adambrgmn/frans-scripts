@@ -9,6 +9,7 @@ const { toSnakeCase, toUpperCase } = require('strman');
 const { pkg, path: pkgPath } = readPkgUp.sync({
   cwd: fs.realpathSync(process.cwd()),
 });
+
 const appDirectory = path.dirname(pkgPath);
 
 function resolveBin(
@@ -51,14 +52,26 @@ function resolveFransScripts() {
 }
 
 const fromRoot = (...p) => path.join(appDirectory, ...p);
-const hasFile = (...p) => fs.existsSync(fromRoot(...p));
+const hasFile = (...p) => {
+  try {
+    fs.accessSync(fromRoot(...p), fs.constants.R_OK);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
 const ifFile = (files, t, f) =>
   arrify(files).some(file => hasFile(file)) ? t : f;
 
 const hasPkgProp = props => arrify(props).some(prop => R.has(prop, pkg));
 
-const hasPkgSubProp = pkgProp => props =>
-  hasPkgProp(arrify(props).map(p => `${pkgProp}.${p}`));
+const hasPkgSubProp = pkgProp => {
+  const p = R.prop(pkgProp, pkg);
+
+  if (R.isNil(p)) return R.F;
+  return props => arrify(props).some(prop => R.has(prop, p));
+};
 
 const ifPkgSubProp = pkgProp => (props, t, f) =>
   hasPkgSubProp(pkgProp)(props) ? t : f;
@@ -68,16 +81,16 @@ const hasDevDep = hasPkgSubProp('devDependencies');
 const hasPeerDep = hasPkgSubProp('peerDependencies');
 const hasAnyDep = args => [hasDep, hasDevDep, hasPeerDep].some(fn => fn(args));
 
-const ifPeerDep = ifPkgSubProp('peerDependencies');
 const ifDep = ifPkgSubProp('dependencies');
 const ifDevDep = ifPkgSubProp('devDependencies');
+const ifPeerDep = ifPkgSubProp('peerDependencies');
 const ifAnyDep = (deps, t, f) => (hasAnyDep(arrify(deps)) ? t : f);
 
 const toConstant = R.pipe(toSnakeCase, toUpperCase);
 
 function envIsSet(name) {
   return (
-    Object.prototype.hasOwnProperty.call(process.env, name) &&
+    process.env.hasOwnProperty.call(process.env, name) &&
     process.env[name] &&
     process.env[name] !== 'undefined'
   );
@@ -87,6 +100,7 @@ function parseEnv(name, def) {
   if (envIsSet(name)) {
     return JSON.parse(process.env[name]);
   }
+
   return def;
 }
 
@@ -111,21 +125,28 @@ const reformatFlags = (flags, ignore = []) => {
 };
 
 module.exports = {
-  appDirectory,
-  envIsSet,
-  fromRoot,
-  hasFile,
-  hasPkgProp,
-  ifAnyDep,
-  ifDep,
-  ifDevDep,
-  ifFile,
-  ifPeerDep,
-  parseEnv,
   pkg,
+  pkgPath,
+  appDirectory,
   resolveBin,
   resolveFransScripts,
-  reformatFlags,
+  fromRoot,
+  hasFile,
+  ifFile,
+  hasPkgProp,
+  hasPkgSubProp,
+  ifPkgSubProp,
+  hasDep,
+  hasDevDep,
+  hasPeerDep,
+  hasAnyDep,
+  ifDep,
+  ifDevDep,
+  ifPeerDep,
+  ifAnyDep,
   toConstant,
+  envIsSet,
+  parseEnv,
   setScriptEnv,
+  reformatFlags,
 };
