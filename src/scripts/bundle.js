@@ -4,7 +4,13 @@ const rimraf = promisify(require('rimraf'));
 const { isNil, is, has, prop, propIs } = require('ramda');
 const pSeries = require('p-series');
 const runScript = require('../utils/run-script');
-const { resolveBin, hasFile, fromRoot, reformatFlags } = require('../utils');
+const {
+  resolveBin,
+  hasFile,
+  fromRoot,
+  reformatFlags,
+  hasPkgProp,
+} = require('../utils');
 
 function bundle(configPath) {
   if (isNil(configPath) || !is(String, configPath)) {
@@ -69,6 +75,12 @@ function bundle(configPath) {
         }
       },
       ...tasks,
+      async () => {
+        const bundlesizeConfig = hasPkgProp('bundlesize')
+          ? []
+          : ['--files', 'dist/*.js'];
+        await runScript('npx', ['bundlesize', ...bundlesizeConfig]);
+      },
     ]);
   };
 }
