@@ -25,8 +25,9 @@
     "build": "./src/bin.js build",
     "lint": "./src/bin.js lint",
     "format": "./src/bin.js format",
-    "validate": "./src/bin.js validate",
     "precommit": "./src/bin.js precommit",
+    "validate":
+      "yarn run lint && yarn run test --no-watch --passWithNoTests && yarn run build",
     "release": "./src/bin.js release"
   },
   "keywords": [],

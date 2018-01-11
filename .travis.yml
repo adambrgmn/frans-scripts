@@ -11,7 +11,7 @@ notifications:
 node_js:
   - '8'
 
-script: yarn run lint && yarn run test --no-watch --passWithNoTests && yarn run build
+script: yarn run validate
 after_success: yarn run release
 
 branches:
