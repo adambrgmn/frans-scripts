@@ -43,7 +43,10 @@ const file = path.join(outputDir, filename);
 
 const output = {
   file,
+  name,
   format: isEsm ? 'es' : format,
+  globals,
+  sourcemap,
 };
 
 const useBuiltinConfig = !hasFile('.babelrc') && !hasPkgProp('babel');
@@ -52,11 +55,7 @@ const babelPresets = useBuiltinConfig ? [here('../build/babel.config.js')] : [];
 module.exports = {
   input,
   output,
-  exports: isEsm ? 'named' : 'default',
-  name,
   external,
-  globals,
-  sourcemap,
   plugins: [
     isNode ? nodeBuiltIns() : null,
     isNode ? nodeGlobals() : null,
