@@ -13,6 +13,7 @@ const ignores = [
 ];
 
 const jestConfig = {
+  rootDir: fromRoot('.'),
   roots: [fromRoot('src')],
   testEnvironment: ifAnyDep(['webpack', 'rollup', 'react'], 'jsdom', 'node'),
   collectCoverageFrom: ['src/**/*.js'],
