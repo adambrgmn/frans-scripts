@@ -66,7 +66,7 @@ function lint(configPath) {
     const files =
       filesGiven.length > 0
         ? filesGiven.filter(f => f.endsWith('.js') || f.endsWith('.jsx'))
-        : ['.'];
+        : ['./src'];
 
     const bin = resolveBin('eslint');
     const commandArgs = [...files, ...config, ...ignore, ...cache, ...flags];
