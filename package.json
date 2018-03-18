@@ -90,7 +90,7 @@
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-uglify": "^3.0.0",
     "sade": "^1.3.2",
-    "semantic-release": "15.0.1",
+    "semantic-release": "15.1.2",
     "strman": "^2.0.0",
     "which": "^1.3.0"
   },
