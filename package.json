@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/adambrgmn/frans-scripts#readme",
   "dependencies": {
-    "all-contributors-cli": "^4.10.1",
+    "all-contributors-cli": "^5.10.2",
     "arrify": "^1.0.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
